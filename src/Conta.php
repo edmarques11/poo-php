@@ -2,25 +2,37 @@
 
 class Conta
 {
-  public string $cpfTitular;
-  public string $nomeTitular;
-  public float $saldo;
+  private Titular $titular;
+  private float $saldo;
+  private static $numeroDeContas = 0;
 
-  public function __construct(string $nomeTitular, string $cpfTitular, float $saldo)
+  public function __construct(Titular $titular, float $saldo = 0)
   {
-    $this->nomeTitular = $nomeTitular;
-    $this->cpfTitular = $cpfTitular;
+    $this->titular = $titular;
     $this->saldo = $saldo;
+
+    self::$numeroDeContas++;
+  }
+
+  public function __destruct()
+  {
+    if (self::$numeroDeContas) {
+      $numberAccounts = self::$numeroDeContas;
+      echo "Existem $numberAccounts contas ativas!" . PHP_EOL;
+    }
+
+    self::$numeroDeContas--;
   }
 
   public function sacar(float $valorASacar): void
   {
-    if ($valorASacar > $this->saldo) {
+    if ($valorASacar > $this->getSaldo()) {
       echo "Saldo indisponível";
       return;
     }
 
     $this->saldo -= $valorASacar;
+    echo "$valorASacar sacado!";
   }
 
   public function depositar(float $valorADepositar): void
@@ -31,26 +43,33 @@ class Conta
     }
 
     $this->saldo += $valorADepositar;
+    echo "$valorADepositar adicionado!";
   }
 
   public function transferir(float $valorATransferir, Conta $contaDestino): void
   {
-    if ($valorATransferir > $this->saldo) {
+    if ($valorATransferir > $this->getSaldo()) {
       echo "Você não tem todo esse dinheiro bixo!";
       return;
     }
 
     $this->sacar($valorATransferir);
     $contaDestino->depositar($valorATransferir);
+    echo "$valorATransferir transferido!";
+  }
+
+  public function getSaldo(): float
+  {
+    return $this->saldo;
+  }
+
+  public static function getNumeroDeContas(): int
+  {
+    return self::$numeroDeContas;
+  }
+
+  public function getTitular(): Titular
+  {
+    return $this->titular;
   }
 }
-
-$conta1 = new Conta('Edmarques', '123.456.789-10', 99999999);
-
-$conta2 = new Conta('Fulano da Sila', '101.234.567-89', 2000);
-
-$conta1->sacar(17);
-$conta1->transferir(200, $conta2);
-
-var_dump($conta1);
-var_dump($conta2);
